@@ -4,14 +4,14 @@
 import os
 import sys
 
-import feincms-bounds
+import feincms_bounds
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
-version = feincms-bounds.__version__
+version = feincms_bounds.__version__
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -26,20 +26,21 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 setup(
     name='feincms-bounds',
     version=version,
-    description='TODO change',
+    description='FeinCMS add-on with admin Page validation',
     long_description=readme + '\n\n' + history,
     author='Marco Fucci',
     author_email='info@marcofucci.com',
     url='https://github.com/marcofucci/feincms-bounds',
     packages=[
-        'feincms-bounds',
+        'feincms_bounds',
     ],
     include_package_data=True,
     install_requires=[
+        'feincms',
     ],
     license="BSD",
     zip_safe=False,
-    keywords='feincms-bounds',
+    keywords='feincms',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Framework :: Django',
