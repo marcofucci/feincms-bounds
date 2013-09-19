@@ -5,7 +5,8 @@ from django.utils.safestring import mark_safe
 from django.forms.util import ErrorList
 from django.http import HttpResponse
 
-from feincms.module.page.models import Page, PageAdmin as PageAdminOld
+from feincms.module.page.models import Page
+from feincms.module.page.modeladmins import PageAdmin as PageAdminOld
 from feincms.module.page.forms import PageAdminForm as PageAdminFormOld
 
 from .exceptions import UniqueTemplateException, \
@@ -219,8 +220,3 @@ class PageAdmin(PageAdminOld):
         if (no_children or not valid_navigation) and getattr(page, 'feincms_editable', True):
             actions[1] = u'<img src="%spages/img/actions_placeholder.gif">' % django_settings.STATIC_URL
         return actions
-
-
-# We have to unregister it, and then reregister
-admin.site.unregister(Page)
-admin.site.register(Page, PageAdmin)

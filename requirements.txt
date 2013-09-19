@@ -1,5 +1,5 @@
 Django
-FeinCMS
+FeinCMS>=1.7.4
 django-mptt>=0.4
 PIL
 feedparser>=5.1.2

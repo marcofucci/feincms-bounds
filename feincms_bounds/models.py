@@ -1,6 +1,4 @@
-from feincms.models import Base, Template as FeinCMSTemplate
-from feincms.module.page.models import Page
-from feincms.content.richtext.models import RichTextContent
+from feincms.models import Template as FeinCMSTemplate
 
 
 class Template(FeinCMSTemplate):
@@ -18,27 +16,3 @@ class Template(FeinCMSTemplate):
         self.unique = unique
         self.first_level_only = first_level_only
         self.no_children = no_children
-
-
-Page.register_templates(
-    Template(
-        key='internalpage',
-        title='Internal Page',
-        path='pages/internal.html',
-        regions=(
-            ('main', 'Main Content'),
-        )
-    ), Template(
-        key='homepage',
-        title='Home Page',
-        path='pages/home_page.html',
-        regions=(
-            ('home_main', 'Main Content'),
-        ),
-        unique=True,
-        first_level_only=True,
-        no_children=True
-    )
-)
-
-Page.create_content_type(RichTextContent)
