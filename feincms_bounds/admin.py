@@ -218,5 +218,5 @@ class PageAdmin(PageAdminOld):
         valid_navigation = is_navigation_level_valid(page.level+2)
 
         if (no_children or not valid_navigation) and getattr(page, 'feincms_editable', True):
-            actions[1] = u'<img src="%spages/img/actions_placeholder.gif">' % django_settings.STATIC_URL
+            actions[1] = u'<img src="%sfeincms_bounds/img/actions_placeholder.gif">' % django_settings.STATIC_URL
         return actions
