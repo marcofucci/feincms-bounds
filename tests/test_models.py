@@ -8,11 +8,7 @@ test_feincms-bounds
 Tests for `feincms-bounds` modules module.
 """
 
-import os
-import shutil
 import unittest
-
-from feincms_bounds import models
 
 
 class TestFeincms_bounds(unittest.TestCase):

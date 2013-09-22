@@ -3,8 +3,8 @@ from feincms.models import Template as FeinCMSTemplate
 
 class Template(FeinCMSTemplate):
     """
-        Custom version of feincms.models.Template which adds support for
-        unique, first-level-only and no-children properties.
+    Custom version of feincms.models.Template which adds support for
+    unique, first-level-only and no-children properties.
     """
     def __init__(
         self, title, path, regions, key=None, preview_image=None, unique=False,

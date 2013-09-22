@@ -1,4 +1,4 @@
-from django.contrib import admin, messages
+from django.contrib import messages
 from django.conf import settings as django_settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
@@ -15,16 +15,16 @@ from .exceptions import UniqueTemplateException, \
 
 def get_max_navigation_level():
     """
-        @return int: max level of navigation as defined by the value of
-            FEINCMS_NAVIGATION_LEVEL in settings.py if defined, None
-            otherwise.
+    @return int: max level of navigation as defined by the value of
+        FEINCMS_NAVIGATION_LEVEL in settings.py if defined, None
+        otherwise.
     """
     return getattr(django_settings, 'FEINCMS_NAVIGATION_LEVEL', None)
 
 
 def is_navigation_level_valid(level):
     """
-        @return bool: True if the level 'level' is valid, False otherwise.
+    @return bool: True if the level 'level' is valid, False otherwise.
     """
     max_level = get_max_navigation_level()
     return not max_level or max_level >= level
@@ -32,17 +32,17 @@ def is_navigation_level_valid(level):
 
 def check_template(model, template, instance=None, parent=None):
     """
-        Checks that the template 'template' is valid, throws the following
-        exceptions otherwise:
-         * UniqueTemplateException: if 'template' is defined as unique and it has
-            been used already somewhere else
-         * FirstLevelOnlyTemplateException: if 'template' is defined as
-            first-level-only and the user is trying to use it in a level of
-            navigation > 1
-         * NoChildrenTemplateException: if the user is trying to add 'model' as
-            child of a page defined as no-children template or he's trying to
-            change the template of this instance to no-children but the contains
-            already some children.
+    Checks that the template 'template' is valid, throws the following
+    exceptions otherwise:
+     * UniqueTemplateException: if 'template' is defined as unique and it
+        has been used already somewhere else
+     * FirstLevelOnlyTemplateException: if 'template' is defined as
+        first-level-only and the user is trying to use it in a level of
+        navigation > 1
+     * NoChildrenTemplateException: if the user is trying to add 'model' as
+        child of a page defined as no-children template or he's trying to
+        change the template of this instance to no-children but the contains
+        already some children.
     """
     def get_parent(parent):
         if not parent:
@@ -51,17 +51,21 @@ def check_template(model, template, instance=None, parent=None):
             return parent
         return Page.objects.get(id=parent)
 
-    if template.unique and model.objects.filter(
-                                template_key=template.key
-                            ).exclude(id=instance.id if instance else -1).count():
-        raise UniqueTemplateException()
+    if template.unique:
+        unique_count = model.objects.filter(
+            template_key=template.key
+        ).exclude(id=instance.id if instance else -1).count()
+
+        if unique_count:
+            raise UniqueTemplateException()
 
     parent_page = get_parent(parent)
-    if template.first_level_only and parent_page:
-        raise FirstLevelOnlyTemplateException()
+    if parent_page:
+        if template.first_level_only:
+            raise FirstLevelOnlyTemplateException()
 
-    if parent_page and model._feincms_templates[parent_page.template_key].no_children:
-        raise NoChildrenTemplateException()
+        if model._feincms_templates[parent_page.template_key].no_children:
+            raise NoChildrenTemplateException()
 
     if instance and template.no_children and instance.children.count():
         raise NoChildrenTemplateException()
@@ -69,16 +73,16 @@ def check_template(model, template, instance=None, parent=None):
 
 def is_template_valid(model, template, instance=None, parent=None):
     """
-        @return bool: True if the 'template' can be associated to 'instance' of
-            time 'model', False otherwise.
+    @return bool: True if the 'template' can be associated to 'instance' of
+        time 'model', False otherwise.
     """
     try:
         check_template(model, template, instance=instance, parent=parent)
         return True
     except (
-            UniqueTemplateException, FirstLevelOnlyTemplateException,
-            NoChildrenTemplateException
-        ):
+        UniqueTemplateException, FirstLevelOnlyTemplateException,
+        NoChildrenTemplateException
+    ):
         pass
 
     return False
@@ -86,8 +90,8 @@ def is_template_valid(model, template, instance=None, parent=None):
 
 class PageAdminForm(PageAdminFormOld):
     """
-        Overridden version of feincms.module.page.forms.PageAdminForm which
-        checks for template properties.
+    Overridden version of feincms.module.page.forms.PageAdminForm which
+    checks for template properties.
     """
     def __init__(self, *args, **kwargs):
         super(PageAdminForm, self).__init__(*args, **kwargs)
@@ -101,9 +105,13 @@ class PageAdminForm(PageAdminFormOld):
         choices = []
         for key, template in templates.items():
             if template.preview_image:
-                choices.append((template.key,
-                    mark_safe(u'<img src="%s" alt="%s" /> %s' % (
-                        template.preview_image, template.key, template.title))))
+                link = mark_safe(
+                    u'<img src="%s" alt="%s" /> %s' % (
+                        template.preview_image, template.key, template.title
+                    )
+                )
+
+                choices.append((template.key, link))
             else:
                 choices.append((template.key, template.title))
 
@@ -113,7 +121,7 @@ class PageAdminForm(PageAdminFormOld):
 
     def clean(self):
         """
-            Adds extra validation against the new template properties.
+        Adds extra validation against the new template properties.
         """
         cleaned_data = super(PageAdminForm, self).clean()
 
@@ -129,7 +137,8 @@ class PageAdminForm(PageAdminFormOld):
             parent_error = None
             try:
                 check_template(
-                    self.Meta.model, template, instance=self.instance, parent=parent
+                    self.Meta.model, template,
+                    instance=self.instance, parent=parent
                 )
             except UniqueTemplateException:
                 parent_error = _('Template already used somewhere else')
@@ -150,8 +159,8 @@ class PageAdminForm(PageAdminFormOld):
 
     def get_valid_templates(self, instance=None, parent=None):
         """
-            @return dict: dict containing all the templates valid for this instance
-                (excluding unique ones already used etc.)
+        @return dict: dict containing all the templates valid for this instance
+            (excluding unique ones already used etc.)
         """
         templates = self.Meta.model._feincms_templates.copy()
 
@@ -166,14 +175,14 @@ class PageAdminForm(PageAdminFormOld):
 
 class PageAdmin(PageAdminOld):
     """
-        Overridden version of feincms.module.page.models.PageAdmin which
-        uses a custom version of PageAdminForm.
+    Overridden version of feincms.module.page.models.PageAdmin which
+    uses a custom version of PageAdminForm.
     """
     form = PageAdminForm
 
     def _move_node(self, request):
         """
-            Checks for validation before moving the pages around.
+        Checks for validation before moving the pages around.
         """
         cut_item = self.model._tree_manager.get(pk=request.POST.get('cut_item'))
         pasted_on = self.model._tree_manager.get(pk=request.POST.get('pasted_on'))
@@ -185,7 +194,8 @@ class PageAdmin(PageAdminOld):
 
             try:
                 check_template(
-                    self.model, cut_item_template, instance=cut_item, parent=parent
+                    self.model, cut_item_template,
+                    instance=cut_item, parent=parent
                 )
             except FirstLevelOnlyTemplateException:
                 msg = unicode(_(u"This page can't be used as subpage."))
@@ -201,7 +211,9 @@ class PageAdmin(PageAdminOld):
                 return HttpResponse(msg)
             else:
                 if parent and not is_navigation_level_valid(parent.level+2):
-                    msg = unicode(_(u"Only %d levels allowed" % get_max_navigation_level()))
+                    msg = unicode(
+                        _(u"Only %d levels allowed" % get_max_navigation_level())
+                    )
                     messages.error(request, msg)
                     return HttpResponse(msg)
 
@@ -209,7 +221,7 @@ class PageAdmin(PageAdminOld):
 
     def _actions_column(self, page):
         """
-            Removes the add icon if the user can't add any subpages.
+        Removes the add icon if the user can't add any subpages.
         """
         actions = super(PageAdmin, self)._actions_column(page)
 
@@ -217,6 +229,7 @@ class PageAdmin(PageAdminOld):
         no_children = template and template.no_children
         valid_navigation = is_navigation_level_valid(page.level+2)
 
-        if (no_children or not valid_navigation) and getattr(page, 'feincms_editable', True):
+        feincms_editable = getattr(page, 'feincms_editable', True)
+        if (no_children or not valid_navigation) and feincms_editable:
             actions[1] = u'<img src="%sfeincms_bounds/img/actions_placeholder.gif">' % django_settings.STATIC_URL
         return actions
