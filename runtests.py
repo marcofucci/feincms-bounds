@@ -11,12 +11,19 @@ try:
                 "ENGINE": "django.db.backends.sqlite3",
             }
         },
-        ROOT_URLCONF="feincms_bounds.urls",
+        ROOT_URLCONF="tests.testapp.urls",
         INSTALLED_APPS=[
             "django.contrib.auth",
             "django.contrib.contenttypes",
+            "django.contrib.sessions",
+            'django.contrib.messages',
             "django.contrib.sites",
+            'django.contrib.admin',
+            "feincms",
+            "feincms.module.page",
+            "mptt",
             "feincms_bounds",
+            'tests.testapp'
         ],
         SITE_ID=1,
     )
