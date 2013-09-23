@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
 
 from feincms.module.page.models import Page
-from feincms.content.richtext.models import RichTextContent
 
 
 class TestPagesBase(TestCase):
@@ -77,7 +76,6 @@ class TestMaxNavigationLevel(TestPagesBase):
                 {'parent': [u'Only 3 levels allowed']}
             )
 
-            # from nose.tools import set_trace; set_trace()
             self.assertEqual(Page.objects.count(), 3)
             self.assertRaises(Page.DoesNotExist, Page.objects.get, slug='test-page-levl4')
 
@@ -99,3 +97,95 @@ class TestMaxNavigationLevel(TestPagesBase):
             self.create_page(**kwargs)
             self.assertEqual(Page.objects.count(), level)
             parent = Page.objects.get(slug=slug)
+
+
+class TestUniqueTemplates(TestPagesBase):
+    def test_unique(self):
+        self.login()
+
+        self.assertEqual(Page.objects.count(), 0)
+
+        # creating page with unique template 'homepage'
+        response = self.create_page(
+            title='Home Page', slug='homepage', template_key='homepage'
+        )
+
+        self.assertEqual(Page.objects.count(), 1)
+
+        # trying to create second page with unique template 'homepage'
+        response = self.create_page(
+            title='Home Page2', slug='homepage2', template_key='homepage'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context_data['adminform'].form
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'template_key': [u'Select a valid choice. homepage is not one of the available choices.']
+        })
+
+        self.assertEqual(Page.objects.count(), 1)
+
+
+class TestFistLevelOnlyTemplates(TestPagesBase):
+    def test_first_level_only(self):
+        self.login()
+
+        self.assertEqual(Page.objects.count(), 0)
+
+        # creating internal page
+        response = self.create_page(
+            title='Test', slug='test', template_key='internalpage'
+        )
+
+        self.assertEqual(Page.objects.count(), 1)
+        test_page = Page.objects.all()[0]
+
+        # trying to create homepage under the internal page
+        response = self.create_page(
+            title='Home Page', slug='homepage', template_key='homepage',
+            parent=test_page.pk
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context_data['adminform'].form
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'parent': [u"This template can't be used as a subpage"]
+        })
+        # from nose.tools import set_trace; set_trace()
+
+        self.assertEqual(Page.objects.count(), 1)
+
+
+class TestNoChildrenTemplates(TestPagesBase):
+    def test_no_children(self):
+        self.login()
+
+        self.assertEqual(Page.objects.count(), 0)
+
+        # creating homepage
+        response = self.create_page(
+            title='Home Page', slug='homepage', template_key='homepage'
+        )
+
+        self.assertEqual(Page.objects.count(), 1)
+        homepage = Page.objects.all()[0]
+
+        # trying to create page under the no-children homepage
+        response = self.create_page(
+            title='Test', slug='test', template_key='internalpage',
+            parent=homepage.pk
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context_data['adminform'].form
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'parent': [u"This parent page can't have subpages"]
+        })
+
+        self.assertEqual(Page.objects.count(), 1)
