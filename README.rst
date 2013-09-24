@@ -2,6 +2,9 @@
 feincms-bounds
 =============================
 
+.. image:: https://travis-ci.org/marcofucci/feincms-bounds.png?branch=master
+        :target: https://travis-ci.org/marcofucci/feincms-bounds
+
 
 FeinCMS add-on with admin Page validation:
 
