@@ -55,6 +55,8 @@ In ``models.py``::
 	        regions=(
 	            ('main', 'Main Content'),
 	        ),
+	        
+	        # new kwargs introduced by feincms-bounds
 	        unique=True,
 	        first_level_only=True,
 	        no_children=True
