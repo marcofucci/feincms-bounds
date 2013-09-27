@@ -26,7 +26,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 setup(
     name='feincms-bounds',
     version=version,
-    description='FeinCMS add-on with admin Page validation',
+    description='FeinCMS add-on which adds extra admin Page validation',
     long_description=readme + '\n\n' + history,
     author='Marco Fucci',
     author_email='info@marcofucci.com',
