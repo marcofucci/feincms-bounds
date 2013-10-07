@@ -19,7 +19,8 @@ Quickstart
 
 Install feincms-bounds::
 
-    pip install -e git@github.com:marcofucci/feincms-bounds.git#egg=feincms-bounds
+    pip install feincms-bounds
+
 
 Add feincms-bounds to your ``settings.INSTALLED_APPS``::
 
@@ -55,7 +56,7 @@ In ``models.py``::
 	        regions=(
 	            ('main', 'Main Content'),
 	        ),
-	        
+
 	        # new kwargs introduced by feincms-bounds
 	        unique=True,
 	        first_level_only=True,
